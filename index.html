@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific Calculator</title>
+    <style>
+        :root {
+            --calc-bg: #2a2d37;
+            --display-bg: #1e1e1e;
+            --btn-bg: #3a3d4a;
+            --btn-hover: #4c4f5e;
+            --btn-active: #5e616f;
+            --operator-bg: #ff9f0a;
+            --operator-hover: #ffb340;
+            --operator-active: #ffc773;
+            --function-bg: #616574;
+            --function-hover: #72768a;
+            --function-active: #83879d;
+            --equals-bg: #ff9f0a;
+            --equals-hover: #ffb340;
+            --equals-active: #ffc773;
+            --clear-bg: #ff3b30;
+            --clear-hover: #ff5e55;
+            --clear-active: #ff817a;
+            --text-light: #ffffff;
+            --text-dark: #000000;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #e0e5ec 0%, #c2c8d0 100%);
+            padding: 20px;
+        }
+        
+        .calculator {
+            width: 340px;
+            background-color: var(--calc-bg);
+            border-radius: 20px;
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.3),
+                inset 0 -5px 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .display {
+            background-color: var(--display-bg);
+            color: var(--text-light);
+            padding: 15px 20px;
+            text-align: right;
+            font-size: 24px;
+            height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+            font-family: 'Courier New', monospace;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .display::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        }
+        
+        .previous-operand {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            height: 20px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .current-operand {
+            font-size: 32px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 300;
+        }
+        
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+        
+        button {
+            border: none;
+            padding: 15px 0;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: var(--btn-bg);
+            color: var(--text-light);
+            border-radius: 10px;
+            transition: all 0.1s ease;
+            box-shadow: 
+                0 4px 0 rgba(0, 0, 0, 0.2),
+                inset 0 -1px 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            font-weight: 500;
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 
+                0 2px 0 rgba(0, 0, 0, 0.2),
+                inset 0 -1px 1px rgba(255, 255, 255, 0.1);
+        }
+        
+        button:hover {
+            filter: brightness(1.1);
+        }
+        
+        button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        button:hover::after {
+            opacity: 1;
+        }
+        
+        .operator {
+            background-color: var(--operator-bg);
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+        
+        .operator:hover {
+            background-color: var(--operator-hover);
+        }
+        
+        .operator:active {
+            background-color: var(--operator-active);
+        }
+        
+        .equals {
+            background-color: var(--equals-bg);
+            color: var(--text-dark);
+            font-weight: 600;
+            grid-column: span 1;
+            aspect-ratio: auto;
+            height: 100%;
+            grid-row: span 2;
+        }
+        
+        .equals:hover {
+            background-color: var(--equals-hover);
+        }
+        
+        .equals:active {
+            background-color: var(--equals-active);
+        }
+        
+        .function {
+            background-color: var(--function-bg);
+            font-size: 16px;
+        }
+        
+        .function:hover {
+            background-color: var(--function-hover);
+        }
+        
+        .function:active {
+            background-color: var(--function-active);
+        }
+        
+        .clear {
+            background-color: var(--clear-bg);
+            font-weight: 600;
+        }
+        
+        .clear:hover {
+            background-color: var(--clear-hover);
+        }
+        
+        .clear:active {
+            background-color: var(--clear-active);
+        }
+        
+        .span-2 {
+            grid-column: span 2;
+            aspect-ratio: auto;
+        }
+        
+        .brand {
+            color: rgba(255, 255, 255, 0.3);
+            text-align: center;
+            margin-top: 15px;
+            font-size: 12px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display">
+            <div class="previous-operand" id="previous-operand"></div>
+            <div class="current-operand" id="current-operand">0</div>
+        </div>
+        <div class="buttons">
+            <!-- First Row -->
+            <button class="function" onclick="calculateSecondFunction()">2nd</button>
+            <button class="function" onclick="calculatePi()">π</button>
+            <button class="function" onclick="calculateEuler()">e</button>
+            <button class="clear" onclick="clearAll()">AC</button>
+            <button class="clear" onclick="deleteLastChar()">DEL</button>
+            
+            <!-- Second Row -->
+            <button class="function" onclick="calculateSquareRoot()">√</button>
+            <button class="function" onclick="appendOperator('(')">(</button>
+            <button class="function" onclick="appendOperator(')')">)</button>
+            <button class="function" onclick="appendOperator('%')">%</button>
+            <button class="operator" onclick="appendOperator('/')">÷</button>
+            
+            <!-- Third Row -->
+            <button class="function" onclick="calculateXPowerY()">x^y</button>
+            <button onclick="appendNumber('7')">7</button>
+            <button onclick="appendNumber('8')">8</button>
+            <button onclick="appendNumber('9')">9</button>
+            <button class="operator" onclick="appendOperator('*')">×</button>
+            
+            <!-- Fourth Row -->
+            <button class="function" onclick="calculateTenPowerX()">10^x</button>
+            <button onclick="appendNumber('4')">4</button>
+            <button onclick="appendNumber('5')">5</button>
+            <button onclick="appendNumber('6')">6</button>
+            <button class="operator" onclick="appendOperator('-')">-</button>
+            
+            <!-- Fifth Row -->
+            <button class="function" onclick="calculateLog()">log</button>
+            <button onclick="appendNumber('1')">1</button>
+            <button onclick="appendNumber('2')">2</button>
+            <button onclick="appendNumber('3')">3</button>
+            
+            <!-- Sixth Row -->
+            <button class="function" onclick="calculateLn()">ln</button>
+            <button class="function" onclick="appendPlusMinus()">+/-</button>
+            <button onclick="appendNumber('0')">0</button>
+            <button onclick="appendNumber('.')">.</button>
+            
+            <!-- Equal button positioned at bottom right -->
+            <button class="equals" onclick="calculate()" style="grid-column: 5; grid-row: 5 / span 2;">=</button>
+        </div>
+        <div class="brand">BIOBI</div>
+    </div>
+
+    <script>
+        let currentOperand = '0';
+        let previousOperand = '';
+        let operation = undefined;
+        let resetScreen = false;
+        let secondFunctionActive = false;
+
+        const currentOperandElement = document.getElementById('current-operand');
+        const previousOperandElement = document.getElementById('previous-operand');
+
+        function updateDisplay() {
+            currentOperandElement.innerText = currentOperand;
+            previousOperandElement.innerText = previousOperand;
+        }
+
+        function appendNumber(number) {
+            if (currentOperand === '0' || resetScreen) {
+                currentOperand = '';
+                resetScreen = false;
+            }
+            currentOperand += number;
+            updateDisplay();
+        }
+
+        function appendOperator(operator) {
+            if (resetScreen) return;
+            
+            if (currentOperand === '') {
+                if (operator === '(' || operator === ')') {
+                    currentOperand = operator;
+                    updateDisplay();
+                }
+                return;
+            }
+            
+            if (operator === '(' || operator === ')') {
+                currentOperand += operator;
+            } else {
+                if (previousOperand !== '') {
+                    calculate();
+                }
+                operation = operator;
+                previousOperand = currentOperand + ' ' + operation;
+                currentOperand = '';
+            }
+            updateDisplay();
+        }
+
+        function clearAll() {
+            currentOperand = '0';
+            previousOperand = '';
+            operation = undefined;
+            secondFunctionActive = false;
+            updateDisplay();
+        }
+
+        function deleteLastChar() {
+            if (currentOperand.length === 1) {
+                currentOperand = '0';
+            } else {
+                currentOperand = currentOperand.slice(0, -1);
+            }
+            updateDisplay();
+        }
+
+        function calculate() {
+            let computation;
+            const prev = parseFloat(previousOperand);
+            const current = parseFloat(currentOperand);
+            
+            if (isNaN(prev) || isNaN(current)) {
+                try {
+                    computation = eval(previousOperand + currentOperand);
+                } catch (error) {
+                    return;
+                }
+            } else {
+                switch (operation) {
+                    case '+':
+                        computation = prev + current;
+                        break;
+                    case '-':
+                        computation = prev - current;
+                        break;
+                    case '*':
+                        computation = prev * current;
+                        break;
+                    case '/':
+                        computation = prev / current;
+                        break;
+                    case '%':
+                        computation = prev % current;
+                        break;
+                    case '^':
+                        computation = Math.pow(prev, current);
+                        break;
+                    default:
+                        return;
+                }
+            }
+            
+            currentOperand = computation.toString();
+            operation = undefined;
+            previousOperand = '';
+            resetScreen = true;
+            updateDisplay();
+        }
+
+        function calculateSquareRoot() {
+            const num = parseFloat(currentOperand);
+            if (isNaN(num)) return;
+            currentOperand = Math.sqrt(num).toString();
+            updateDisplay();
+        }
+
+        function calculateSecondFunction() {
+            secondFunctionActive = !secondFunctionActive;
+            updateFunctionButtons();
+        }
+
+        function updateFunctionButtons() {
+            const secondBtn = document.querySelector('button[onclick="calculateSecondFunction()"]');
+            secondBtn.style.backgroundColor = secondFunctionActive ? 'var(--operator-active)' : 'var(--function-bg)';
+        }
+
+        function calculatePi() {
+            if (currentOperand === '0' || resetScreen) {
+                currentOperand = '';
+                resetScreen = false;
+            }
+            currentOperand += Math.PI.toString();
+            updateDisplay();
+        }
+
+        function calculateEuler() {
+            if (currentOperand === '0' || resetScreen) {
+                currentOperand = '';
+                resetScreen = false;
+            }
+            currentOperand += Math.E.toString();
+            updateDisplay();
+        }
+
+        function calculateXPowerY() {
+            appendOperator('^');
+        }
+
+        function calculateTenPowerX() {
+            const num = parseFloat(currentOperand);
+            if (isNaN(num)) return;
+            currentOperand = Math.pow(10, num).toString();
+            updateDisplay();
+        }
+
+        function calculateLog() {
+            const num = parseFloat(currentOperand);
+            if (isNaN(num)) return;
+            currentOperand = secondFunctionActive ? Math.log2(num).toString() : Math.log10(num).toString();
+            updateDisplay();
+        }
+
+        function calculateLn() {
+            const num = parseFloat(currentOperand);
+            if (isNaN(num)) return;
+            currentOperand = secondFunctionActive ? Math.log1p(num).toString() : Math.log(num).toString();
+            updateDisplay();
+        }
+
+        function appendPlusMinus() {
+            if (currentOperand === '0') return;
+            if (currentOperand.startsWith('-')) {
+                currentOperand = currentOperand.substring(1);
+            } else {
+                currentOperand = '-' + currentOperand;
+            }
+            updateDisplay();
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', function(event) {
+            if (event.key >= '0' && event.key <= '9') {
+                appendNumber(event.key);
+            } else if (event.key === '.') {
+                appendNumber('.');
+            } else if (event.key === '+' || event.key === '-' || event.key === '*' || event.key === '/') {
+                appendOperator(event.key);
+            } else if (event.key === 'Enter' || event.key === '=') {
+                calculate();
+            } else if (event.key === 'Escape') {
+                clearAll();
+            } else if (event.key === 'Backspace') {
+                deleteLastChar();
+            } else if (event.key === '(' || event.key === ')') {
+                appendOperator(event.key);
+            } else if (event.key === '^') {
+                calculateXPowerY();
+            } else if (event.key === '%') {
+                appendOperator('%');
+            } else if (event.key === 'p' && event.shiftKey) {
+                calculatePi();
+            } else if (event.key === 'e' && !event.shiftKey) {
+                calculateEuler();
+            }
+        });
+
+        // Initialize display
+        updateDisplay();
+    </script>
+</body>
+</html>
